@@ -34,14 +34,6 @@ class ContentSelection extends Backend
 {
 
     /**
-     * Initialize the object
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Check if the content element has permission for current configurations
      * 
      * @param DB_Mysql_Result $objRow
@@ -50,210 +42,73 @@ class ContentSelection extends Backend
      */
     public function getContentElementWithPermission($objRow, $strBuffer)
     {
-        if ($objRow->contentSelector != '')
+        if ($objRow->contentSelector == '' || TL_MODE == 'BE')
+            return $strBuffer;
+
+        $arrCs = deserialize($objRow->contentSelector);
+
+        if (!is_array($arrCs))
+            return $strBuffer;
+
+        $objUa = $this->Environment->agent;
+
+        $blnGlobalPermisson = false;
+        foreach ($arrCs as $arrSelector)
         {
-            $arrCs = deserialize($objRow->contentSelector);
-            $objUa = $this->Environment->agent;
-            
-            foreach ($arrCs as $key => $arrSelector)
+            $arrSelector['cs_client_os'] = ($arrSelector['cs_client_os'] != '') ? array(
+                'value' => $arrSelector['cs_client_os'],
+                'config' => $GLOBALS['TL_CONFIG']['os'][$arrSelector['cs_client_os']]
+                    ) : false;
+            $arrSelector['cs_client_browser']   = ($arrSelector['cs_client_browser'] != '') ? $GLOBALS['TL_CONFIG']['browser'][$arrSelector['cs_client_browser']] : false;
+            $arrSelector['cs_client_is_mobile'] = (($arrSelector['cs_client_is_mobile'] != '') ? (($arrSelector['cs_client_is_mobile'] == 1) ? true : false) : 'empty');
+
+            $blnPermisson = true;
+            foreach ($arrSelector as $strConfig => $mixedConfig)
             {
-                $arrCs[$key]['cs_client_os']        = ($arrSelector['cs_client_os'] != '') ? $this->getOs($arrSelector['cs_client_os']) : false;
-                $arrCs[$key]['cs_client_browser']   = ($arrSelector['cs_client_browser'] != '') ? $this->getBrowser($arrSelector['cs_client_browser']) : false;
-                $arrCs[$key]['cs_client_is_mobile'] = ($arrSelector['cs_client_is_mobile'] != '') ? true : false;
-                $arrCs[$key]['cs_client_is_invert'] = ($arrSelector['cs_client_is_invert'] != '') ? true : false;
-            }
-
-            $blnGlobalPermisson = false;
-            foreach ($arrCs as $key => $arrSelector)
-            {
-                $blnPermisson = true;
-                foreach ($arrSelector as $strConfig => $mixedConfig)
+                switch ($strConfig)
                 {
-                    switch ($strConfig)
-                    {
-                        case 'cs_client_os':
-                            if (!$this->checkOsPermission($mixedConfig, $objUa))
-                                $blnPermisson = false;
-                            break;
+                    case 'cs_client_os':
+                        $blnPermisson = ($blnPermisson && AgentSelection::checkOsPermission($mixedConfig, $objUa));
+                        break;
 
-                        case 'cs_client_browser':
-                            if (!$this->checkBrowserPermission($mixedConfig, $objUa))
-                                $blnPermisson = false;
-                            break;
+                    case 'cs_client_browser':
+                        $blnPermisson = ($blnPermisson && ($mixedConfig['browser'] == $objUa->browser || $mixedConfig['browser'] == '')) ? true : false;
+                        break;
 
-                        case 'cs_client_browser_version':
-                            if (!$this->checkBrowserVersionPermission($mixedConfig, $objUa))
-                                $blnPermisson = false;
-                            break;
+                    case 'cs_client_browser_version':
+                        $blnPermisson = ($blnPermisson && AgentSelection::checkBrowserVerPermission($mixedConfig, $objUa, $arrSelector['cs_client_browser_operation']));
+                        break;
 
-                        case 'cs_client_is_mobile':
-                            if (!$this->checkMobilPermission($mixedConfig, $objUa))
-                                $blnPermisson = false;
-                            break;
+                    case 'cs_client_is_mobile':
+                        if (strlen($mixedConfig) < 2)
+                        {
+                            $blnPermisson = ($blnPermisson && $mixedConfig == $objUa->mobile) ? true : false;
+                        }
+                        break;
 
-                        case 'cs_client_is_invert':
-                            if ($mixedConfig)
-                            {
-                                $blnPermisson = ($blnPermisson) ? false : true;
-                            }                            
-                            break;
-                    }
-                }
-
-                if (!$blnGlobalPermisson && $blnPermisson)
-                {
-                    $blnGlobalPermisson = true;
+                    case 'cs_client_is_invert':
+                        if ($mixedConfig)
+                        {
+                            $blnPermisson = ($blnPermisson) ? false : true;
+                        }
+                        break;
                 }
             }
 
-            if ($blnGlobalPermisson === false)
+            if (!$blnGlobalPermisson && $blnPermisson)
             {
-                return;
-            }
-            else
-            {
-                return $strBuffer;
+                $blnGlobalPermisson = true;
             }
         }
 
-        return $strBuffer;
-    }
-
-    // Helper ------------------------------------------------------------------
-
-    /**
-     * Check if the operation system has permission
-     * 
-     * @param mixed $mixedConfig
-     * @param stdClass $objUa
-     * @return boolean 
-     */
-    private function checkOsPermission($mixedConfig, $objUa)
-    {
-        $arrIOs = array('iPad', 'iPhone', 'iPod');
-        
-        if ($mixedConfig)
-        {            
-            if ($mixedConfig['config']['os'] == $objUa->os)
-            {                
-                if (in_array($mixedConfig['value'], $arrIOs))
-                {
-                    if (strpos($objUa->string, $mixedConfig['value']) !== false)
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            return false;
+        if ($blnGlobalPermisson === false)
+        {
+            return;
         }
         else
         {
-            return true;
+            return $strBuffer;
         }
-    }
-
-    /**
-     * Check if the browser has permission
-     * 
-     * @param type $mixedConfig
-     * @param stdClass $objUa
-     * @return boolean
-     */
-    private function checkBrowserPermission($mixedConfig, $objUa)
-    {
-        if ($mixedConfig)
-        {
-            if ($mixedConfig['config']['browser'] == $objUa->browser)
-            {
-                return true;
-            }
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Check if the browser version has permission
-     * 
-     * @param type $mixedConfig
-     * @param stdClass $objUa
-     * @return boolean
-     */
-    private function checkBrowserVersionPermission($mixedConfig, $objUa)
-    {
-        if (strlen($mixedConfig) > 0)
-        {
-            if ($mixedConfig == $objUa->version)
-            {
-                return true;
-            }
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Check if is mobil and has permission
-     * 
-     * @param type $mixedConfig
-     * @param stdClass $objUa
-     * @return boolean
-     */
-    private function checkMobilPermission($mixedConfig, $objUa)
-    {
-        if ($mixedConfig)
-        {
-            if($mixedConfig != $objUa->mobile)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Get the config operation system for given filter
-     * 
-     * @param string $strFilter
-     * @return array|null
-     */
-    private function getOs($strFilter)
-    {
-        foreach ($GLOBALS['TL_CONFIG']['os'] as $strLabel => $arrOs)
-        {
-            if ($strFilter == standardize($strLabel))
-            {
-                return array('value'  => $strLabel, 'config' => $GLOBALS['TL_CONFIG']['os'][$strLabel]);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the config browser for given filter
-     * 
-     * @param string $strFilter
-     * @return array|null 
-     */
-    private function getBrowser($strFilter)
-    {
-        foreach ($GLOBALS['TL_CONFIG']['browser'] as $strLabel => $arrBrowser)
-        {
-            if ($strFilter == $arrBrowser['browser'])
-            {
-                return array('value'  => $strLabel, 'config' => $GLOBALS['TL_CONFIG']['browser'][$strLabel]);
-            }
-        }
-
-        return null;
     }
 
 }

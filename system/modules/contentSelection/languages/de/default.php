@@ -26,9 +26,6 @@
  * @license    GNU/GPL 2
  * @filesource
  */
- 
-/**
- * Hooks
- */
-$GLOBALS['TL_HOOKS']['getContentElement'][] = array('ContentSelection', 'getContentElementWithPermission');
+$GLOBALS['TL_LANG']['MSC']['cs_mobile']    = 'Mobil';
+$GLOBALS['TL_LANG']['MSC']['cs_no_mobile'] = 'Nicht Mobil';
 ?>

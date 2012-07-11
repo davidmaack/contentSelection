@@ -26,10 +26,11 @@
  * @license    GNU/GPL 2
  * @filesource
  */
+
 /**
  * Lists 
  */
-//$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = array('tl_content_contentSelection', 'childRecordCallback');
+$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = array('tl_content_contentSelection', 'childRecordCallback');
 
 /**
  * Palettes
@@ -54,60 +55,85 @@ foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $key => $row)
 }
 
 /**
- * Add fields
+ * Fields
  */
 $GLOBALS['TL_DCA']['tl_content']['fields']['contentSelector'] = array
     (
-    'label'     => &$GLOBALS['TL_LANG']['tl_content']['contentSelector'],
-    'exclude'   => true,
+    'label' => &$GLOBALS['TL_LANG']['tl_content']['contentSelector'],
+    'exclude' => true,
     'inputType' => 'multiColumnWizard',
-    'eval'      => array
+    'eval' => array
         (
         'columnFields' => array
             (
             'cs_client_os' => array
                 (
-                'label'            => &$GLOBALS['TL_LANG']['tl_content']['cs_client_os'],
-                'exclude'          => true,
-                'inputType'        => 'select',
-                'options_callback' => array('tl_content_contentSelection', 'getCsClientOs'),
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_os'],
+                'exclude' => true,
+                'inputType' => 'select',
+                'options_callback' => array('AgentSelection', 'getClientOs'),
                 'eval' => array(
-                    'style'              => 'width:158px',
+                    'style' => 'width:158px',
                     'includeBlankOption' => true,
-                    'chosen'             => true
+                    'chosen' => true
                 )
             ),
-            'cs_client_browser'  => array
+            'cs_client_browser' => array
                 (
-                'label'            => &$GLOBALS['TL_LANG']['tl_content']['cs_client_browser'],
-                'exclude'          => true,
-                'inputType'        => 'select',
-                'options_callback' => array('tl_content_contentSelection', 'getCsClientBrowser'),
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_browser'],
+                'exclude' => true,
+                'inputType' => 'select',
+                'options_callback' => array('AgentSelection', 'getClientBrowser'),
                 'eval' => array(
-                    'style'                     => 'width:158px',
-                    'includeBlankOption'        => true,
-                    'chosen'                    => true
+                    'style' => 'width:158px',
+                    'includeBlankOption' => true,
+                    'chosen' => true
+                )
+            ),
+            'cs_client_browser_operation' => array
+                (
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_browser_operation'],
+                'inputType' => 'select',
+                'options' => array(
+                    'lt' => '<',
+                    'lte' => '<=',
+                    'gte' => '>=',
+                    'gt' => '>'
+                ),
+                'eval' => array(
+                    'style' => 'width:70px',
+                    'includeBlankOption' => true
                 )
             ),
             'cs_client_browser_version' => array
                 (
-                'label'     => &$GLOBALS['TL_LANG']['tl_content']['cs_client_browser_version'],
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_browser_version'],
                 'inputType' => 'text',
-                'eval'      => array('style'               => 'width:160px')
+                'eval' => array(
+                    'style' => 'width:70px'
+                )
             ),
             'cs_client_is_mobile' => array
                 (
-                'label'     => &$GLOBALS['TL_LANG']['tl_content']['cs_client_is_mobile'],
-                'exclude'   => true,
-                'inputType' => 'checkbox',
-                'eval'      => array('style'               => 'width:40px')
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_is_mobile'],
+                'exclude' => true,
+                'inputType' => 'select',
+                'options' => array(
+                    '1' => $GLOBALS['TL_LANG']['MSC']['yes'],
+                    '2' => $GLOBALS['TL_LANG']['MSC']['no']
+                ),
+                'eval' => array(
+                    'includeBlankOption' => true
+                )
             ),
             'cs_client_is_invert' => array
                 (
-                'label'     => &$GLOBALS['TL_LANG']['tl_content']['cs_client_is_invert'],
-                'exclude'   => true,
+                'label' => &$GLOBALS['TL_LANG']['tl_content']['cs_client_is_invert'],
+                'exclude' => true,
                 'inputType' => 'checkbox',
-                'eval'      => array('style' => 'width:40px')
+                'eval' => array(
+                    'style' => 'width:60px'
+                )
             )
         )
     )
@@ -126,40 +152,6 @@ class tl_content_contentSelection extends Controller
 {
 
     /**
-     * Return option array for operation systems
-     * 
-     * @return array
-     */
-    public function getCsClientOs()
-    {
-        $arrOptions = array();
-
-        foreach ($GLOBALS['TL_CONFIG']['os'] as $strLabel => $arrOs)
-        {
-            $arrOptions[standardize($strLabel)] = $strLabel;
-        }
-
-        return $arrOptions;
-    }
-
-    /**
-     * Return browser array for operation systems
-     * 
-     * @return array
-     */
-    public function getCsClientBrowser()
-    {
-        $arrOptions = array();
-
-        foreach ($GLOBALS['TL_CONFIG']['browser'] as $strLabel => $arrBrowser)
-        {
-            $arrOptions[$arrBrowser['browser']] = $strLabel;
-        }
-
-        return $arrOptions;
-    }
-    
-    /**
      * Return the new label for the content element
      * 
      * @param array $arrRow
@@ -167,7 +159,89 @@ class tl_content_contentSelection extends Controller
      */
     public function childRecordCallback($arrRow)
     {
-        // TODO set output
+        $arrContentSelection = array();
+        if ($arrRow['contentSelector'])
+        {
+            $arrCs = deserialize($arrRow['contentSelector']);
+            if (is_array($arrCs))
+            {
+                $arrSelector = $arrCs[0];
+                $strInvert   = (($arrSelector['cs_client_is_invert']) ? ucfirst($GLOBALS['TL_LANG']['MSC']['hiddenHide']) : ucfirst($GLOBALS['TL_LANG']['MSC']['hiddenShow'])) . ':';
+                foreach ($arrSelector as $strConfig => $mixedConfig)
+                {
+                    switch ($strConfig)
+                    {
+                        case 'cs_client_os':
+                            if ($mixedConfig)
+                            {
+                                $arrContentSelection[] = ' ' . $mixedConfig;
+                            }
+                            break;
+
+                        case 'cs_client_browser':
+                            if ($mixedConfig)
+                            {
+                                $arrContentSelection[] = ' ' . $mixedConfig;
+                            }
+                            break;
+
+                        case 'cs_client_browser_version':
+                            if ($mixedConfig)
+                            {
+                                switch ($arrSelector['cs_client_browser_operation'])
+                                {
+                                    case 'lt':
+                                        $strOperator           = '<';
+                                        break;
+                                    case 'lte':
+                                        $strOperator           = '<=';
+                                        break;
+                                    case 'gte':
+                                        $strOperator           = '>=';
+                                        break;
+                                    case 'gt':
+                                        $strOperator           = '>';
+                                        break;
+                                    default:
+                                        $strOperator           = '';
+                                        break;
+                                }
+                                $arrContentSelection[] = ' ' . $strOperator . ' ' . $mixedConfig;
+                            }
+                            break;
+
+                        case 'cs_client_is_mobile':
+                            if ($mixedConfig != '')
+                            {
+                                $arrContentSelection[] = ' ' . (($mixedConfig == 1) ? $GLOBALS['TL_LANG']['MSC']['cs_mobile'] : $GLOBALS['TL_LANG']['MSC']['cs_no_mobile']);
+                            }
+                            break;
+                    }
+                }
+
+                if (count($arrContentSelection) > 0)
+                {
+                    array_unshift($arrContentSelection, $strInvert);
+                    array_unshift($arrContentSelection, '(');
+                    if (count($arrCs) > 1)
+                    {
+                        $arrContentSelection[] = ' /... ';
+                    }
+                    $arrContentSelection[] = ')';
+                }
+            }
+        }
+
+        return vsprintf(
+                        '<div class="cte_type %s">%s%s %s</div><div class="limit_height%s">%s</div>', array(
+                    $arrRow['invisible'] ? 'unpublished' : 'published',
+                    ($GLOBALS['TL_LANG']['CTE'][$arrRow['type']][0] != '') ? $GLOBALS['TL_LANG']['CTE'][$arrRow['type']][0] : '&nbsp;',
+                    (($arrRow['type'] == 'alias') ? ' ID ' . $arrRow['cteAlias'] : '') . ($arrRow['protected'] ? ' (' . $GLOBALS['TL_LANG']['MSC']['protected'] . ')' : ($arrRow['guests'] ? ' (' . $GLOBALS['TL_LANG']['MSC']['guests'] . ')' : '')),
+                    implode('', $arrContentSelection),
+                    (!$GLOBALS['TL_CONFIG']['doNotCollapse'] ? ' h64' : ''),
+                    $this->getContentElement($arrRow['id'])
+                        )
+        );
     }
 
 }

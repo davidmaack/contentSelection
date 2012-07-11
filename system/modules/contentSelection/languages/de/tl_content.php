@@ -1,5 +1,4 @@
-<?php if (!defined('TL_ROOT'))
-     die('You cannot access this file directly!');
+<?php if (!defined('TL_ROOT')) die('You cannot access this file directly!');
 
 /**
  * Contao Open Source CMS
@@ -29,17 +28,13 @@
  */
 
 /**
- * Legends
- */
-$GLOBALS['TL_LANG']['tl_content']['contentSelector'] = array('Filter', '');
-
-/**
  * Fields
  */
+$GLOBALS['TL_LANG']['tl_content']['contentSelector'] = array('Filter', 'Hier können Sie Filterregeln anlegen die für das content element gelten sollen.');
 $GLOBALS['TL_LANG']['tl_content']['cs_client_os'] = array('System', 'Wählen Sie hier das zu filternde System aus.');
 $GLOBALS['TL_LANG']['tl_content']['cs_client_browser'] = array('Browser', 'Wählen Sie hier den zu filternden Browser aus.');
 $GLOBALS['TL_LANG']['tl_content']['cs_client_browser_version'] = array('Version', 'Geben Sie hier die zu filternde Browser Version ein.');
-$GLOBALS['TL_LANG']['tl_content']['cs_client_is_mobile'] = array('Mobile', '');
+$GLOBALS['TL_LANG']['tl_content']['cs_client_browser_operation'] = array('Operator', 'Geben Sie hier den zu filternden Operator ein.');
+$GLOBALS['TL_LANG']['tl_content']['cs_client_is_mobile'] = array('Mobile', 'Wählen Sie hier aus ob Mobile oder nicht gefiltert werden soll.');
 $GLOBALS['TL_LANG']['tl_content']['cs_client_is_invert'] = array('Umkehren', 'Hiermit können Sie die Filterlogik umkehren.');
-
 ?>
