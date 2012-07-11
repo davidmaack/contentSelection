@@ -12,5 +12,5 @@
 -- 
 
 CREATE TABLE `tl_content` (
-  `contentSelector` blob NULL,
+  `contentSelection` blob NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

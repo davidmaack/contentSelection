@@ -2,7 +2,7 @@
 
 /**
  * Contao Open Source CMS
- * Copyright (C) 2005-2010 Leo Feyer
+ * Copyright (C) 2005-2012 Leo Feyer
  *
  * Formerly known as TYPOlight Open Source CMS.
  *
@@ -10,12 +10,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program. If not, please visit the Free
  * Software Foundation website at <http://www.gnu.org/licenses/>.
@@ -47,7 +47,13 @@ foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $key => $row)
     {
         if (stristr($strPalett, 'expert_legend'))
         {
-            $arrPalettes[$strKey] = $strPalett . ',contentSelector';
+            $arrTmpPalett = explode(",", $strPalett);
+            
+            // Set m12 class on the last field before ours
+            $GLOBALS['TL_DCA']['tl_content']['fields'][$arrTmpPalett[count($arrTmpPalett) - 1]]['eval']['tl_class'] .= 'clr';
+            $arrTmpPalett[] = 'contentSelection';
+            
+            $arrPalettes[$strKey] = implode(',', $arrTmpPalett);
         }
     }
 
@@ -57,9 +63,9 @@ foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $key => $row)
 /**
  * Fields
  */
-$GLOBALS['TL_DCA']['tl_content']['fields']['contentSelector'] = array
+$GLOBALS['TL_DCA']['tl_content']['fields']['contentSelection'] = array
     (
-    'label' => &$GLOBALS['TL_LANG']['tl_content']['contentSelector'],
+    'label' => &$GLOBALS['TL_LANG']['tl_content']['contentSelection'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => array
@@ -160,9 +166,9 @@ class tl_content_contentSelection extends Controller
     public function childRecordCallback($arrRow)
     {
         $arrContentSelection = array();
-        if ($arrRow['contentSelector'])
+        if ($arrRow['contentSelection'])
         {
-            $arrCs = deserialize($arrRow['contentSelector']);
+            $arrCs = deserialize($arrRow['contentSelection']);
             if (is_array($arrCs))
             {
                 $arrSelector = $arrCs[0];
@@ -213,7 +219,7 @@ class tl_content_contentSelection extends Controller
                         case 'cs_client_is_mobile':
                             if ($mixedConfig != '')
                             {
-                                $arrContentSelection[] = ' ' . (($mixedConfig == 1) ? $GLOBALS['TL_LANG']['MSC']['cs_mobile'] : $GLOBALS['TL_LANG']['MSC']['cs_no_mobile']);
+                                $arrContentSelection[] = ' ' . $GLOBALS['TL_LANG']['tl_content']['cs_client_is_mobile'][0] . ': ' . (($mixedConfig == 1) ? $GLOBALS['TL_LANG']['MSC']['yes'] : $GLOBALS['TL_LANG']['MSC']['no']);
                             }
                             break;
                     }
