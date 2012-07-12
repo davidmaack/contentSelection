@@ -28,6 +28,11 @@
  */
 
 /**
+ * Legend
+ */
+$GLOBALS['TL_LANG']['tl_content']['contentSelection_legend']        = 'Filter Einstellungen';
+
+/**
  * Fields
  */
 $GLOBALS['TL_LANG']['tl_content']['contentSelection']               = array('Filter', 'Hier können Sie Inhaltselemente für Browser und/oder Betriebssysteme anzeigen oder verstecken.');

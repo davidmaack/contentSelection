@@ -42,20 +42,8 @@ foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $key => $row)
         continue;
     }
 
-    $arrPalettes = explode(";", $row);
-    foreach ($arrPalettes as $strKey => $strPalett)
-    {
-        if (stristr($strPalett, 'expert_legend'))
-        {
-            $arrTmpPalett = explode(",", $strPalett);
-            
-            // Set m12 class on the last field before ours
-            $GLOBALS['TL_DCA']['tl_content']['fields'][$arrTmpPalett[count($arrTmpPalett) - 1]]['eval']['tl_class'] .= 'clr';
-            $arrTmpPalett[] = 'contentSelection';
-            
-            $arrPalettes[$strKey] = implode(',', $arrTmpPalett);
-        }
-    }
+    $arrPalettes = explode(";", $row);    
+    $arrPalettes[] = '{contentSelection_legend},contentSelection';
 
     $GLOBALS['TL_DCA']['tl_content']['palettes'][$key] = implode(";", $arrPalettes);
 }
@@ -80,8 +68,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['contentSelection'] = array
                 'options_callback' => array('AgentSelection', 'getClientOs'),
                 'eval' => array(
                     'style' => 'width:158px',
-                    'includeBlankOption' => true,
-                    'chosen' => true
+                    'includeBlankOption' => true
                 )
             ),
             'cs_client_browser' => array
@@ -92,8 +79,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['contentSelection'] = array
                 'options_callback' => array('AgentSelection', 'getClientBrowser'),
                 'eval' => array(
                     'style' => 'width:158px',
-                    'includeBlankOption' => true,
-                    'chosen' => true
+                    'includeBlankOption' => true
                 )
             ),
             'cs_client_browser_operation' => array

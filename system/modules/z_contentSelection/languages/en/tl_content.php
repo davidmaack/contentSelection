@@ -28,6 +28,11 @@
  */
 
 /**
+ * Legend
+ */
+$GLOBALS['TL_LANG']['tl_content']['contentSelection_legend']        = 'Filter settings';
+
+/**
  * Fields
  */
 $GLOBALS['TL_LANG']['tl_content']['contentSelection']               = array('Filter', 'Here you can hide or show content elements for specific os and/or user-agents.');
