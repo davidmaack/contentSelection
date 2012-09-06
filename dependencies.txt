@@ -1,9 +1,0 @@
- /*
-  * agentSelection
-  * https://github.com/menatwork/agentSelection
-  */
-
- /*
-  * MultiColumnWizard
-  * http://www.contao.org/erweiterungsliste/view/MultiColumnWizard.html
-  */
