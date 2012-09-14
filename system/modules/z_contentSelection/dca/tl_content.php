@@ -115,7 +115,8 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['contentSelection'] = array
                     '2' => $GLOBALS['TL_LANG']['MSC']['no']
                 ),
                 'eval' => array(
-                    'includeBlankOption' => true
+                    'includeBlankOption' => true, 
+                    'style' => 'width:60px'
                 )
             ),
             'cs_client_is_invert' => array
