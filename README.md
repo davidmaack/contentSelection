@@ -1,4 +1,1 @@
-contentSelection
-================
-
-Contao Extension :: Show or hide content elements for selected os and browser
+[This repository has been moved to the official MEN AT WORK Interactive organization!](https://github.com/menatwork-ia)
